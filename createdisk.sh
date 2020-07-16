@@ -273,9 +273,6 @@ ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- sudo podman tag $certImage open
 # Remove unused images from container storage
 ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'sudo crictl images -q | xargs -n 1 sudo crictl rmi 2>/dev/null'
 
-# Replace pull secret with a null json string '{}'
-${OC} --kubeconfig $1/auth/kubeconfig replace -f pull-secret.yaml
-
 # Remove the Cluster ID with a empty string.
 ${OC} --kubeconfig $1/auth/kubeconfig patch clusterversion version -p '{"spec":{"clusterID":""}}' --type merge
 
@@ -295,9 +292,6 @@ ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- sudo systemctl enable io.podman
 # Remove all the pods from the VM
 ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'sudo crictl stopp $(sudo crictl pods -q)'
 ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'for i in {1..3}; do sudo crictl rmp $(sudo crictl pods -q) && break || sleep 2; done'
-
-# Remove pull secret from the VM
-${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'sudo rm -f /var/lib/kubelet/config.json'
 
 # Download the hyperV daemons and libvarlink-util dependency on host
 mkdir $1/packages
