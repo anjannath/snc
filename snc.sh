@@ -12,7 +12,7 @@ XMLLINT=${XMLLINT:-xmllint}
 YQ=${YQ:-yq}
 CRC_VM_NAME=${CRC_VM_NAME:-crc}
 BASE_DOMAIN=${CRC_BASE_DOMAIN:-testing}
-MIRROR=${MIRROR:-https://mirror.openshift.com/pub/openshift-v4/clients/ocp}
+MIRROR=${MIRROR:-https://github.com/openshift/okd/releases/download}
 CRC_PV_DIR="/mnt/pv-data"
 SSH="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i id_rsa_crc"
 
@@ -272,7 +272,7 @@ elif [ ! -f ${OPENSHIFT_PULL_SECRET_PATH} ]; then
 fi
 
 if test -z "${OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE-}"; then
-    OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE="$(curl -l "${MIRROR}/${OPENSHIFT_RELEASE_VERSION}/release.txt" | sed -n 's/^Pull From: //p')"
+    OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE="$(curl -L "${MIRROR}/${OPENSHIFT_RELEASE_VERSION}/release.txt" | sed -n 's/^Pull From: //p')"
     export OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE
 elif test -n "${OPENSHIFT_VERSION-}"; then
     echo "Both OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE and OPENSHIFT_VERSION are set, OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE will take precedence"
