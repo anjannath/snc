@@ -49,6 +49,7 @@ function sparsify {
     # Starting with 4.3, the root partition is an encryption-ready luks partition
     # - virt-sparsify is not able to deal at all with this partition
     # The following commands will do all of the above after mounting the luks partition
+    # TODO: Use virt-sparisify since in fcos its not a luks encrypted partition
     eval $(echo nokey | ${GUESTFISH}  --keys-from-stdin --listen )
     if [ $? -ne 0 ]; then
             echo "${GUESTFISH} failed to start, aborting"
@@ -58,8 +59,7 @@ function sparsify {
     guestfish --remote <<EOF
 add-drive $baseDir/$srcFile
 run
-luks-open $partition coreos-root
-mount /dev/mapper/coreos-root /
+mount $partition /
 zero-free-space /boot/
 EOF
     if [ $? -ne 0 ]; then
