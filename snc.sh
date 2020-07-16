@@ -99,15 +99,6 @@ function run_preflight_checks() {
         echo "libvirt and DNS configuration successfully checked"
 }
 
-function replace_pull_secret() {
-        # Hide the output of 'cat $OPENSHIFT_PULL_SECRET_PATH' so that it doesn't
-        # get leaked in CI logs
-        set +x
-        local filename=$1
-        sed -i "s!@HIDDEN_PULL_SECRET@!$(cat $OPENSHIFT_PULL_SECRET_PATH)!" $filename
-        set -x
-}
-
 function apply_bootstrap_etcd_hack() {
         # This is needed for now due to etcd changes in 4.4:
         # https://github.com/openshift/cluster-etcd-operator/pull/279
@@ -197,7 +188,7 @@ function create_pvs() {
 # in order to trigger regeneration of the initial 24h certs the installer created on the cluster
 function renew_certificates() {
     # Get the cli image from release payload and update it to bootstrap-cred-manager resource
-    cli_image=$(${OC} adm release -a ${OPENSHIFT_PULL_SECRET_PATH} info ${OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE} --image-for=cli)
+    cli_image=$(${OC} adm release info ${OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE} --image-for=cli)
     ${YQ} write kubelet-bootstrap-cred-manager-ds.yaml.in spec.template.spec.containers[0].image ${cli_image} >kubelet-bootstrap-cred-manager-ds.yaml
 
     ${OC} apply -f kubelet-bootstrap-cred-manager-ds.yaml
@@ -263,14 +254,6 @@ fi
 
 run_preflight_checks
 
-if [ -z "${OPENSHIFT_PULL_SECRET_PATH-}" ]; then
-    echo "OpenShift pull secret file path must be specified through the OPENSHIFT_PULL_SECRET_PATH environment variable"
-    exit 1
-elif [ ! -f ${OPENSHIFT_PULL_SECRET_PATH} ]; then
-    echo "Provided OPENSHIFT_PULL_SECRET_PATH (${OPENSHIFT_PULL_SECRET_PATH}) does not exists"
-    exit 1
-fi
-
 if test -z "${OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE-}"; then
     OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE="$(curl -L "${MIRROR}/${OPENSHIFT_RELEASE_VERSION}/release.txt" | sed -n 's/^Pull From: //p')"
     export OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE
@@ -284,8 +267,8 @@ echo "Setting OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE to ${OPENSHIFT_INSTALL_RE
 # Extract openshift-install binary if not present in current directory
 if test -z ${OPENSHIFT_INSTALL-}; then
     echo "Extracting installer binary from OpenShift baremetal-installer image"
-    baremetal_installer_image=$(${OC} adm release -a ${OPENSHIFT_PULL_SECRET_PATH} info ${OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE} --image-for=baremetal-installer)
-    ${OC} image -a ${OPENSHIFT_PULL_SECRET_PATH} extract ${baremetal_installer_image} --confirm --path /usr/bin/openshift-install:.
+    baremetal_installer_image=$(${OC} adm release info ${OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE} --image-for=baremetal-installer)
+    ${OC} image extract ${baremetal_installer_image} --confirm --path /usr/bin/openshift-install:.
     chmod +x openshift-install
     OPENSHIFT_INSTALL=./openshift-install
 fi
@@ -324,8 +307,7 @@ rm -fr ${INSTALL_DIR} && mkdir ${INSTALL_DIR} && cp install-config.yaml ${INSTAL
 ${YQ} write --inplace ${INSTALL_DIR}/install-config.yaml baseDomain ${BASE_DOMAIN}
 ${YQ} write --inplace ${INSTALL_DIR}/install-config.yaml metadata.name ${CRC_VM_NAME}
 ${YQ} write --inplace ${INSTALL_DIR}/install-config.yaml compute[0].replicas 0
-${YQ} write --inplace ${INSTALL_DIR}/install-config.yaml pullSecret "@HIDDEN_PULL_SECRET@"
-replace_pull_secret ${INSTALL_DIR}/install-config.yaml
+${YQ} write --inplace ${INSTALL_DIR}/install-config.yaml pullSecret '{"auths":{"fake":{"auth": "bar"}}}'
 ${YQ} write --inplace ${INSTALL_DIR}/install-config.yaml sshKey "$(cat id_rsa_crc.pub)"
 
 # Create the manifests using the INSTALL_DIR
