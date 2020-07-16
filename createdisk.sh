@@ -323,7 +323,7 @@ until ping -c1 api.${CRC_VM_NAME}.${BASE_DOMAIN} >/dev/null 2>&1; do
 done
 
 # Get the rhcos ostree Hash ID
-ostree_hash=$(${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'cat /proc/cmdline | grep -oP "(?<=rhcos-).*(?=/vmlinuz)"')
+ostree_hash=$(${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'cat /proc/cmdline | grep -oP "(?<=fedora-coreos-).*(?=/vmlinuz)"')
 
 # Get the rhcos kernel release
 kernel_release=$(${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'uname -r')
@@ -332,7 +332,7 @@ kernel_release=$(${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'uname -r')
 kernel_cmd_line=$(${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'cat /proc/cmdline')
 
 # SCP the vmlinuz/initramfs from VM to Host in provided folder.
-${SCP} core@api.${CRC_VM_NAME}.${BASE_DOMAIN}:/boot/ostree/rhcos-${ostree_hash}/* $1
+${SCP} core@api.${CRC_VM_NAME}.${BASE_DOMAIN}:/boot/ostree/fedora-coreos-${ostree_hash}/* $1
 
 # Add a dummy network interface with internalIP
 ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- "sudo nmcli conn add type dummy ifname eth10 con-name internalEtcd ip4 ${INTERNAL_IP}/24  && sudo nmcli conn up internalEtcd"
