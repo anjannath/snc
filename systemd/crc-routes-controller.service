@@ -1,0 +1,12 @@
+[Unit]
+Description=CRC Unit starting routes controller
+After=kubelet.service
+Requires=kubelet.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/crc-routes-controller.sh
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=CRC Unit for configuring dnsmasq
+Requires=ovs-configuration.service
+After=ovs-configuration.service
+Before=dnsmasq.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/crc-dnsmasq.sh
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target
