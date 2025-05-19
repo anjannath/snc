@@ -3,6 +3,7 @@ Description=CRC Unit patching the MachineConfig to add new ssh key
 After=kubelet.service
 StartLimitIntervalSec=1min
 StartLimitBurst=1
+ConditionPathExists=!/opt/crc/%n.done
 
 [Service]
 Type=oneshot
@@ -10,6 +11,7 @@ Restart=on-failure
 ExecCondition=/usr/local/bin/check-cloud-env.sh
 ExecStart=/usr/local/bin/ocp-mco-sshkey.sh
 RemainAfterExit=true
+ExecStartPost=-touch /opt/crc/%n.done
 
 [Install]
 WantedBy=multi-user.target

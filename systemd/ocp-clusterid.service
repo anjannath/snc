@@ -1,12 +1,14 @@
 [Unit]
 Description=CRC Unit setting random cluster ID
 After=kubelet.service
+ConditionPathExists=!/opt/crc/%n.done
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/ocp-clusterid.sh
 ExecCondition=/usr/local/bin/check-cloud-env.sh
 Restart=on-failure
+ExecStartPost=-touch /opt/crc/%n.done
 
 [Install]
 WantedBy=multi-user.target

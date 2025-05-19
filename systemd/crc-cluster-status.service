@@ -2,12 +2,14 @@
 Description=CRC Unit checking if cluster is ready
 After=kubelet.service ocp-clusterid.service ocp-cluster-ca.service ocp-custom-domain.service
 After=crc-pullsecret.service
+ConditionPathExists=!/opt/crc/%n.done
 
 [Service]
 Type=oneshot
 Restart=on-failure
 ExecCondition=/usr/local/bin/check-cloud-env.sh
 ExecStart=/usr/local/bin/crc-cluster-status.sh
+ExecStartPost=-touch /opt/crc/%n.done
 RemainAfterExit=true
 
 [Install]

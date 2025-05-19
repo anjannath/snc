@@ -1,10 +1,12 @@
 [Unit]
 Description=CRC Unit to grow the root filesystem
+ConditionPathExists=!/opt/crc/%n.done
 
 [Service]
 Type=oneshot
 ExecCondition=/usr/local/bin/check-cloud-env.sh
 ExecStart=/usr/local/bin/ocp-growfs.sh
+ExecStartPost=-touch /opt/crc/%n.done
 
 [Install]
 WantedBy=multi-user.target

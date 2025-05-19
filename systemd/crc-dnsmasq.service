@@ -3,6 +3,7 @@ Description=CRC Unit for configuring dnsmasq
 Wants=ovs-configuration.service
 After=ovs-configuration.service
 Before=kubelet-dependencies.target
+ConditionPathExists=!/opt/crc/%n.done
 StartLimitIntervalSec=30
 
 [Service]
@@ -14,6 +15,7 @@ ExecCondition=/usr/local/bin/check-cloud-env.sh
 ExecStart=/usr/local/bin/crc-dnsmasq.sh
 ExecStartPost=/usr/bin/systemctl restart NetworkManager.service
 ExecStartPost=/usr/bin/systemctl restart dnsmasq.service
+ExecStartPost=-touch /opt/crc/%n.done
 
 [Install]
 WantedBy=kubelet-dependencies.target

@@ -1,6 +1,7 @@
 [Unit]
 Description=CRC Unit setting nip.io domain for cluster
 After=kubelet.service ocp-clusterid.service ocp-cluster-ca.service
+ConditionPathExists=!/opt/crc/%n.done
 
 [Service]
 Type=oneshot
@@ -8,6 +9,7 @@ Restart=on-failure
 EnvironmentFile=/etc/systemd/system/crc-env
 ExecCondition=/usr/local/bin/check-cloud-env.sh
 ExecStart=/usr/local/bin/ocp-custom-domain.sh
+ExecStartPost=-touch /opt/crc/%n.done
 
 [Install]
 WantedBy=multi-user.target

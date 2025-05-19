@@ -2,12 +2,14 @@
 Description=CRC Unit starting routes controller
 Wants=network-online.target gvisor-tap-vsock.service sys-class-net-tap0.device
 After=sys-class-net-tap0.device network-online.target kubelet.service gvisor-tap-vsock.service
+ConditionPathExists=!/opt/crc/%n.done
 
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/systemd/system/crc-env
 ExecCondition=/usr/local/bin/check-cloud-env.sh
 ExecStart=/usr/local/bin/crc-routes-controller.sh
+ExecStartPost=-touch /opt/crc/%n.done
 
 [Install]
 WantedBy=multi-user.target
